@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Library - Student Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155',
+                            text: '#f8fafc'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Outfit', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        .dark .glass {
+            background: rgba(30, 41, 59, 0.95);
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 10px;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        .star-rating input {
+            display: none;
+        }
+        .star-rating label {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #fbbf24;
+        }
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        /* Mobile Sidebar Transitions */
+        #mobile-sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        #mobile-sidebar.hidden-sidebar {
+            transform: translateX(-100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 custom-scrollbar transition-colors duration-300">
+
+    <!-- Mobile Sidebar -->
+    <div id="mobile-sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm hidden"></div>
+    <aside id="mobile-sidebar" class="fixed top-0 left-0 h-full w-72 bg-white dark:bg-slate-900 z-[80] shadow-2xl hidden-sidebar flex flex-col p-6 border-r border-slate-100 dark:border-slate-800">
+        <div class="flex items-center justify-between mb-10">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
+                    <i class="fas fa-book text-white text-xs"></i>
+                </div>
+                <span class="text-xl font-bold text-slate-800 dark:text-white">My<span class="gradient-text">Library</span></span>
+            </div>
+            <button onclick="toggleMobileSidebar()" class="text-slate-400 hover:text-rose-500 transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <nav class="flex-1 space-y-4">
+            <a href="javascript:void(0)" onclick="showSection('dashboard'); toggleMobileSidebar()" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="javascript:void(0)" onclick="showSection('explore'); toggleMobileSidebar()" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition">
+                <i class="fas fa-search"></i> Explore
+            </a>
+            <a href="javascript:void(0)" onclick="showSection('feedback'); toggleMobileSidebar()" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition">
+                <i class="fas fa-comment-alt"></i> Feedback
+            </a>
+            <a href="javascript:void(0)" onclick="showSection('profile'); toggleMobileSidebar()" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition">
+                <i class="fas fa-user-circle"></i> Profile
+            </a>
+        </nav>
+
+        <div class="pt-6 border-t border-slate-100 dark:border-slate-800">
+            <button onclick="logout()" class="w-full flex items-center gap-4 p-4 rounded-2xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 font-bold transition">
+                <i class="fas fa-power-off"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Navigation -->
+    <nav class="glass fixed top-0 w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-slate-400 hover:text-indigo-600 transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none">
+                        <i class="fas fa-book text-white"></i>
+                    </div>
+                    <span class="text-2xl font-bold tracking-tight text-slate-800 dark:text-white hidden sm:block">My<span class="gradient-text">Library</span></span>
+                </div>
+                
+                <div class="flex items-center space-x-4 sm:space-x-8">
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex items-center space-x-8 mr-4">
+                        <a href="javascript:void(0)" onclick="showSection('dashboard')" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold transition">Dashboard</a>
+                        <a href="javascript:void(0)" onclick="showSection('explore')" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold transition">Explore</a>
+                        <a href="javascript:void(0)" onclick="showSection('feedback')" class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold transition">Feedback</a>
+                    </div>
+
+                    <!-- Dark Mode Toggle -->
+                    <button onclick="toggleDarkMode()" class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex items-center justify-center">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block text-amber-400"></i>
+                    </button>
+                    
+                    <div id="nav-user" class="hidden flex items-center gap-3 sm:gap-4 pl-4 sm:pl-6 border-l border-slate-200 dark:border-slate-800">
+                        <button onclick="showSection('profile')" class="flex items-center gap-3 group">
+                            <div class="hidden sm:flex flex-col items-end">
+                                <span id="nav-username" class="text-sm font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 transition"></span>
+                                <span class="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Student Profile</span>
+                            </div>
+                            <img id="nav-avatar" src="" class="w-10 h-10 rounded-xl border-2 border-indigo-50 dark:border-slate-700 group-hover:border-indigo-500 transition">
+                        </button>
+                        <button onclick="logout()" class="hidden sm:block p-2 text-slate-400 hover:text-rose-500 transition">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        
+        <!-- Auth Section -->
+        <section id="auth-section" class="flex items-center justify-center min-h-[70vh] animate-fade-in">
+            <div class="bg-white dark:bg-slate-900 p-8 sm:p-10 rounded-3xl shadow-2xl shadow-indigo-100 dark:shadow-none w-full max-w-md border border-slate-100 dark:border-slate-800">
+                <div class="text-center mb-8">
+                    <div class="inline-flex p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl mb-4 text-indigo-600 dark:text-indigo-400">
+                        <i class="fas fa-user-graduate text-3xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">Student Portal</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2">Sign in with your credentials</p>
+                </div>
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Full Name</label>
+                        <div class="relative">
+                            <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="login-name" required class="w-full pl-12 pr-4 py-3 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 dark:text-white focus:border-indigo-500 transition outline-none" placeholder="Enter full name">
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Department</label>
+                        <div class="relative">
+                            <i class="fas fa-building absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <select id="login-dept" required class="w-full pl-12 pr-4 py-3 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 dark:text-white focus:border-indigo-500 transition outline-none appearance-none">
+                                <option value="">Select Department</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Mechanical">Mechanical</option>
+                                <option value="Civil">Civil</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Architecture">Architecture</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Student ID / Email</label>
+                        <div class="relative">
+                            <i class="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="login-id" required class="w-full pl-12 pr-4 py-3 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 dark:text-white focus:border-indigo-500 transition outline-none" placeholder="Enter ID/Email">
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">Password</label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="password" id="login-password" required 
+                                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}"
+                                title="Must contain at least one uppercase, one lowercase, one special character, and at least 8 characters"
+                                class="w-full pl-12 pr-4 py-3 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 dark:text-white focus:border-indigo-500 transition outline-none" placeholder="••••••••">
+                        </div>
+                        <p class="text-[10px] text-slate-400 px-1">Must have Uppercase, Lowercase & Special Char.</p>
+                    </div>
+                    <button type="submit" class="w-full gradient-bg text-white font-bold py-4 rounded-2xl shadow-xl shadow-indigo-200 dark:shadow-none hover:scale-[1.02] active:scale-[0.98] transition transform mt-2">
+                        Access Dashboard
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="hidden space-y-10 animate-fade-in">
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
+                <div>
+                    <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight text-center lg:text-left">Hello, <span id="profile-name-greet" class="gradient-text">Student</span>! 👋</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1 font-medium text-center lg:text-left">Ready for your research today?</p>
+                </div>
+                <div class="w-full lg:w-96 relative">
+                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" placeholder="Quick search..." class="w-full pl-14 pr-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 dark:text-white shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 card-hover group">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-book text-blue-600 dark:text-blue-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-slate-500 dark:text-slate-400 text-sm font-bold uppercase tracking-wider">Total Books</h3>
+                    <p class="text-3xl font-black text-slate-900 dark:text-white mt-2">12,450</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 card-hover group">
+                    <div class="bg-purple-50 dark:bg-purple-900/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-microchip text-purple-600 dark:text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-purple-500 dark:text-purple-400 text-sm font-bold uppercase tracking-wider">E-Journals</h3>
+                    <p class="text-3xl font-black text-slate-900 dark:text-white mt-2">850</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 card-hover group">
+                    <div class="bg-amber-50 dark:bg-amber-900/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-couch text-amber-600 dark:text-amber-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-amber-500 dark:text-amber-400 text-sm font-bold uppercase tracking-wider">Seats Available</h3>
+                    <p class="text-3xl font-black text-slate-900 dark:text-white mt-2" id="seat-count">42/120</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 card-hover group">
+                    <div class="bg-rose-50 dark:bg-rose-900/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-clock text-rose-600 dark:text-rose-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-rose-500 dark:text-rose-400 text-sm font-bold uppercase tracking-wider">Today's Timing</h3>
+                    <p class="text-2xl font-black text-slate-900 dark:text-white mt-2">07:00 - 12:00</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div class="lg:col-span-8 space-y-10">
+                    <div class="bg-slate-900 dark:bg-slate-900/50 rounded-[2.5rem] p-8 sm:p-10 text-white relative overflow-hidden shadow-2xl">
+                        <div class="relative z-10">
+                            <h2 class="text-3xl font-black mb-8 flex items-center gap-4">
+                                <i class="fas fa-shield-alt text-indigo-400"></i>
+                                Library Code of Conduct
+                            </h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                                <div class="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <i class="fas fa-volume-mute text-indigo-400 text-xl mt-1"></i>
+                                    <div><h4 class="font-bold">Strict Silence</h4><p class="text-xs text-slate-400 mt-1">No group discussions allowed.</p></div>
+                                </div>
+                                <div class="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <i class="fas fa-id-card text-indigo-400 text-xl mt-1"></i>
+                                    <div><h4 class="font-bold">Entry ID</h4><p class="text-xs text-slate-400 mt-1">Must scan ID at entrance.</p></div>
+                                </div>
+                                <div class="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <i class="fas fa-mobile-alt text-indigo-400 text-xl mt-1"></i>
+                                    <div><h4 class="font-bold">Mute Phones</h4><p class="text-xs text-slate-400 mt-1">Devices must be on silent mode.</p></div>
+                                </div>
+                                <div class="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <i class="fas fa-ban text-indigo-400 text-xl mt-1"></i>
+                                    <div><h4 class="font-bold">No Reservation</h4><p class="text-xs text-slate-400 mt-1">Don't leave bags to reserve seats.</p></div>
+                                </div>
+                                <div class="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <i class="fas fa-hamburger text-indigo-400 text-xl mt-1"></i>
+                                    <div><h4 class="font-bold">No Food</h4><p class="text-xs text-slate-400 mt-1">Eating inside is strictly prohibited.</p></div>
+                                </div>
+                                <div class="flex items-start gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                    <i class="fas fa-history text-indigo-400 text-xl mt-1"></i>
+                                    <div><h4 class="font-bold">Return Window</h4><p class="text-xs text-slate-400 mt-1">Return books within 14 days.</p></div>
+                                </div>
+                            </div>
+                        </div>
+                        <i class="fas fa-university absolute -right-20 -bottom-20 text-[20rem] text-white/5 rotate-12"></i>
+                    </div>
+                </div>
+                <div class="lg:col-span-4">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm sticky top-28">
+                        <div class="flex items-center gap-5 mb-8">
+                            <img id="profile-img-sidebar" src="" class="w-16 h-16 rounded-2xl shadow-lg border-2 border-indigo-50 dark:border-slate-800">
+                            <div>
+                                <h3 id="profile-name-sidebar" class="font-black text-slate-900 dark:text-white text-lg">Student</h3>
+                                <p id="profile-dept-sidebar" class="text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-widest"></p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <button onclick="showSection('profile')" class="w-full py-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold rounded-2xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-user-circle"></i> My Account
+                            </button>
+                            <button onclick="openEditProfile()" class="w-full py-4 bg-slate-900 dark:bg-slate-800 text-white font-bold rounded-2xl hover:bg-slate-800 dark:hover:bg-slate-700 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Page Section -->
+        <section id="profile-section" class="hidden space-y-10 animate-fade-in">
+            <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden border border-slate-100 dark:border-slate-800 shadow-xl">
+                <div class="h-48 gradient-bg relative">
+                    <button onclick="openEditProfile()" class="absolute top-8 right-8 px-6 py-3 bg-white/20 hover:bg-white/30 text-white backdrop-blur-md rounded-2xl font-bold transition flex items-center gap-2 z-20">
+                        <i class="fas fa-pen"></i> Edit Profile
+                    </button>
+                </div>
+                <div class="px-6 sm:px-10 pb-10 -mt-24 relative z-10">
+                    <div class="flex flex-col md:flex-row items-center md:items-end gap-6 mb-10 text-center md:text-left">
+                        <img id="profile-img-full" src="" class="w-44 h-44 rounded-[2.5rem] border-8 border-white dark:border-slate-900 shadow-2xl bg-white dark:bg-slate-800">
+                        <div class="flex-1 mb-4">
+                            <h1 id="profile-name-full" class="text-4xl font-black text-slate-900 dark:text-white">Student Name</h1>
+                            <p id="profile-id-full" class="text-indigo-600 dark:text-indigo-400 font-black text-lg">ID: LIB-123456</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 pt-10 border-t border-slate-100 dark:border-slate-800">
+                        <div class="space-y-8">
+                            <h3 class="text-xl font-black text-slate-900 dark:text-white">Account Details</h3>
+                            <div class="space-y-4">
+                                <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Full Name</p>
+                                    <p id="info-name" class="font-bold text-slate-800 dark:text-white"></p>
+                                </div>
+                                <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Email / ID</p>
+                                    <p id="info-email" class="font-bold text-slate-800 dark:text-white"></p>
+                                </div>
+                                <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Department</p>
+                                    <p id="info-dept" class="font-bold text-slate-800 dark:text-white"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2 space-y-8">
+                            <h3 class="text-xl font-black text-slate-900 dark:text-white">Current Borrowings</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm flex gap-5">
+                                    <div class="w-20 h-28 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-book-reader text-indigo-400 text-2xl"></i>
+                                    </div>
+                                    <div class="flex flex-col justify-center">
+                                        <h4 class="font-black text-slate-800 dark:text-white">Clean Architecture</h4>
+                                        <p class="text-xs text-slate-400 font-bold mt-1">Due: Apr 20</p>
+                                        <span class="mt-3 inline-block px-3 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-[10px] font-black rounded-full uppercase">12 Days Left</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Explore Page Section -->
+        <section id="explore-section" class="hidden space-y-10 animate-fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="text-center md:text-left">
+                    <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Discover <span class="gradient-text">Books</span></h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg">Find your next great read.</p>
+                </div>
+                <select id="book-filter" onchange="filterBooks()" class="w-full md:w-fit px-6 py-4 bg-white dark:bg-slate-900 dark:text-white rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    <option value="All">All Categories</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Science">Science</option>
+                    <option value="Literature">Literature</option>
+                </select>
+            </div>
+
+            <div id="book-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Books injected here -->
+            </div>
+        </section>
+
+        <!-- Feedback Section -->
+        <section id="feedback-section" class="hidden space-y-12 animate-fade-in max-w-4xl mx-auto">
+            <div class="text-center">
+                <h1 class="text-4xl font-black text-slate-900 dark:text-white">Detailed <span class="gradient-text">Feedback</span></h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-3">Your voice matters to us.</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 sm:p-10 shadow-2xl dark:shadow-none border border-slate-100 dark:border-slate-800">
+                <form action="https://formsubmit.co/giteshmore6767@gmail.com" method="POST" class="space-y-8">
+                    <input type="hidden" name="student_id" id="fb-id">
+                    <input type="hidden" name="student_name" id="fb-name">
+                    <input type="hidden" name="department" id="fb-dept">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Overall Rating</label>
+                                <div class="star-rating">
+                                    <input type="radio" id="s5" name="rating" value="5" required/><label for="s5"><i class="fas fa-star"></i></label>
+                                    <input type="radio" id="s4" name="rating" value="4"/><label for="s4"><i class="fas fa-star"></i></label>
+                                    <input type="radio" id="s3" name="rating" value="3"/><label for="s3"><i class="fas fa-star"></i></label>
+                                    <input type="radio" id="s2" name="rating" value="2"/><label for="s2"><i class="fas fa-star"></i></label>
+                                    <input type="radio" id="s1" name="rating" value="1"/><label for="s1"><i class="fas fa-star"></i></label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Library Staff</label>
+                                <select name="staff" class="w-full px-5 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-100 dark:border-slate-800 outline-none focus:border-indigo-500 font-bold text-sm">
+                                    <option>Very Helpful</option>
+                                    <option>Professional</option>
+                                    <option>Needs Training</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Library Situation</label>
+                                <select name="situation" class="w-full px-5 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-100 dark:border-slate-800 outline-none focus:border-indigo-500 font-bold text-sm">
+                                    <option>Clean & Quiet</option>
+                                    <option>Crowded</option>
+                                    <option value="Burdened">Pressure/Burdened</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3">How do you feel?</label>
+                                <textarea name="feelings" rows="3" class="w-full px-5 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-100 dark:border-slate-800 outline-none focus:border-indigo-500 font-medium text-sm" placeholder="Tell us more..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full gradient-bg text-white font-black py-5 rounded-2xl shadow-xl hover:scale-[1.01] transition-all">Send Report</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="closeEditProfile()"></div>
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800">
+            <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-6">Update Profile</h2>
+            <form onsubmit="saveProfile(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Name</label>
+                    <input type="text" id="edit-name" required class="w-full px-6 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-100 dark:border-slate-800 focus:border-indigo-500 outline-none font-bold mt-2">
+                </div>
+                <div>
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Department</label>
+                    <select id="edit-dept" required class="w-full px-6 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-100 dark:border-slate-800 focus:border-indigo-500 outline-none font-bold mt-2 appearance-none">
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Mechanical">Mechanical</option>
+                        <option value="Civil">Civil</option>
+                        <option value="Electrical">Electrical</option>
+                        <option value="Architecture">Architecture</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Photo Upload</label>
+                    <div class="mt-2">
+                        <input type="file" id="edit-avatar-file" accept="image/*" onchange="previewFile(this)" class="hidden">
+                        <label for="edit-avatar-file" class="flex items-center justify-center w-full px-6 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-indigo-500 cursor-pointer transition text-slate-500 dark:text-slate-400 font-bold text-sm">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i> <span id="file-name-label">Browse Files</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeEditProfile()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 transition">Cancel</button>
+                    <button type="submit" class="flex-1 py-4 gradient-bg text-white font-bold rounded-2xl hover:opacity-90 transition">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <div class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center"><i class="fas fa-book text-white text-xs"></i></div>
+                <span class="text-lg font-bold tracking-tight text-slate-800 dark:text-white">My<span class="gradient-text">Library</span></span>
+            </div>
+            <p class="text-slate-400 text-sm font-medium">© 2024 My Library Portal. Built for Student Excellence.</p>
+        </div>
+    </footer>
+
+    <script>
+        const state = {
+            isLoggedIn: false,
+            user: null,
+            currentView: 'auth',
+            isDarkMode: false
+        };
+
+        const booksData = [
+            { id: 1, title: "Modern Web Design", author: "Jane Smith", category: "Technology" },
+            { id: 2, title: "Quantum Physics", author: "Niels Bohr", category: "Science" },
+            { id: 3, title: "Digital Systems", author: "Morris Mano", category: "Technology" },
+            { id: 4, title: "The Great Gatsby", author: "F. Scott Fitzgerald", category: "Literature" },
+            { id: 5, title: "Clean Code", author: "Robert Martin", category: "Technology" },
+            { id: 6, title: "Cosmos", author: "Carl Sagan", category: "Science" },
+            { id: 7, title: "To Kill a Mockingbird", author: "Harper Lee", category: "Literature" },
+            { id: 8, title: "Artificial Intelligence", author: "Stuart Russell", category: "Technology" }
+        ];
+
+        function toggleDarkMode() {
+            state.isDarkMode = !state.isDarkMode;
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', state.isDarkMode);
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('mobile-sidebar');
+            const overlay = document.getElementById('mobile-sidebar-overlay');
+            sidebar.classList.toggle('hidden-sidebar');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Initialize Dark Mode
+        if (localStorage.getItem('darkMode') === 'true' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            state.isDarkMode = true;
+            document.documentElement.classList.add('dark');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const id = document.getElementById('login-id').value;
+            const name = document.getElementById('login-name').value;
+            const dept = document.getElementById('login-dept').value;
+            
+            state.isLoggedIn = true;
+            state.user = {
+                name: name,
+                dept: dept,
+                id: id.includes('LIB-') ? id : "LIB-" + (10000 + Math.floor(Math.random() * 90000)),
+                email: id.includes('@') ? id : `${id.toLowerCase().replace(/\s/g, '')}@student.edu`,
+                avatarUrl: null
+            };
+
+            showSection('dashboard');
+            updateUI();
+        }
+
+        function showSection(section) {
+            if (!state.isLoggedIn) return;
+            state.currentView = section;
+            ['dashboard-section', 'feedback-section', 'profile-section', 'explore-section'].forEach(s => document.getElementById(s).classList.add('hidden'));
+            document.getElementById(`${section}-section`).classList.remove('hidden');
+            if(section === 'explore') renderBooks('All');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderBooks(filter) {
+            const grid = document.getElementById('book-grid');
+            grid.innerHTML = '';
+            const filtered = filter === 'All' ? booksData : booksData.filter(b => b.category === filter);
+            
+            filtered.forEach(book => {
+                grid.innerHTML += `
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm card-hover group animate-fade-in">
+                        <div class="aspect-[3/4] bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl mb-6 flex items-center justify-center relative overflow-hidden">
+                            <i class="fas fa-book text-indigo-200 dark:text-indigo-800 text-6xl group-hover:scale-110 transition duration-500"></i>
+                            <div class="absolute top-4 right-4 px-3 py-1 bg-green-500 text-white text-[10px] font-black rounded-full uppercase">Physical Copy</div>
+                        </div>
+                        <h4 class="font-black text-slate-800 dark:text-white text-lg leading-tight mb-1">${book.title}</h4>
+                        <p class="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest">${book.author} • ${book.category}</p>
+                        <button class="w-full mt-6 py-4 bg-slate-900 dark:bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-600 dark:hover:bg-indigo-700 transition shadow-lg shadow-slate-100">Request Book</button>
+                    </div>
+                `;
+            });
+        }
+
+        function filterBooks() {
+            const val = document.getElementById('book-filter').value;
+            renderBooks(val);
+        }
+
+        let pendingAvatarUrl = null;
+
+        function openEditProfile() {
+            document.getElementById('edit-name').value = state.user.name;
+            document.getElementById('edit-dept').value = state.user.dept;
+            document.getElementById('file-name-label').textContent = 'Browse Files';
+            pendingAvatarUrl = state.user.avatarUrl;
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function previewFile(input) {
+            const file = input.files[0];
+            if (file) {
+                document.getElementById('file-name-label').textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) { pendingAvatarUrl = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function setDemoAvatar(url) {
+            pendingAvatarUrl = url;
+            document.getElementById('file-name-label').textContent = 'Avatar Selected';
+        }
+
+        function closeEditProfile() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        function saveProfile(event) {
+            event.preventDefault();
+            state.user.name = document.getElementById('edit-name').value;
+            state.user.dept = document.getElementById('edit-dept').value;
+            state.user.avatarUrl = pendingAvatarUrl || state.user.avatarUrl;
+            updateUI();
+            closeEditProfile();
+        }
+
+        function logout() {
+            state.isLoggedIn = false;
+            state.user = null;
+            state.currentView = 'auth';
+            updateUI();
+        }
+
+        function updateUI() {
+            const auth = document.getElementById('auth-section');
+            const nav = document.getElementById('nav-user');
+            
+            if (state.isLoggedIn) {
+                auth.classList.add('hidden');
+                nav.classList.remove('hidden');
+                document.getElementById('nav-username').textContent = state.user.name;
+                document.getElementById('profile-name-greet').textContent = state.user.name;
+                document.getElementById('profile-name-sidebar').textContent = state.user.name;
+                document.getElementById('profile-dept-sidebar').textContent = state.user.dept;
+                document.getElementById('profile-name-full').textContent = state.user.name;
+                document.getElementById('info-name').textContent = state.user.name;
+                document.getElementById('info-email').textContent = state.user.email;
+                document.getElementById('info-dept').textContent = state.user.dept;
+                document.getElementById('fb-id').value = state.user.id;
+                document.getElementById('fb-name').value = state.user.name;
+                document.getElementById('fb-dept').value = state.user.dept;
+
+                const avatar = state.user.avatarUrl || `https://ui-avatars.com/api/?name=${state.user.name}&background=4f46e5&color=fff&size=128&bold=true`;
+                ['nav-avatar', 'profile-img-sidebar', 'profile-img-full'].forEach(id => document.getElementById(id).src = avatar);
+                
+                showSection(state.currentView);
+            } else {
+                auth.classList.remove('hidden');
+                ['dashboard-section', 'feedback-section', 'profile-section', 'explore-section'].forEach(s => document.getElementById(s).classList.add('hidden'));
+                nav.classList.add('hidden');
+            }
+        }
+
+        setInterval(() => {
+            if (state.isLoggedIn && state.currentView === 'dashboard') {
+                const el = document.getElementById('seat-count');
+                if(el) el.textContent = `${Math.floor(Math.random() * 20) + 60}/120`;
+            }
+        }, 4000);
+    </script>
+</body>
+</html>
