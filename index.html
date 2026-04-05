@@ -710,6 +710,42 @@
         </div>
     </div>
 
+    <!-- Delete Book Confirmation Modal -->
+    <div id="delete-book-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="closeDeleteBookModal()"></div>
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-exclamation-triangle text-rose-600 dark:text-rose-400 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-4">Delete Book</h2>
+                <p class="text-slate-600 dark:text-slate-400 mb-8">Are you sure you want to delete this book? This action cannot be undone.</p>
+                <div class="flex gap-4">
+                    <button onclick="closeDeleteBookModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
+                    <button onclick="confirmDeleteBook()" class="flex-1 py-4 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Student Confirmation Modal -->
+    <div id="delete-student-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="closeDeleteStudentModal()"></div>
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-exclamation-triangle text-rose-600 dark:text-rose-400 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-4">Delete Student</h2>
+                <p class="text-slate-600 dark:text-slate-400 mb-8">Are you sure you want to delete this student profile? This action cannot be undone.</p>
+                <div class="flex gap-4">
+                    <button onclick="closeDeleteStudentModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
+                    <button onclick="confirmDeleteStudent()" class="flex-1 py-4 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 py-12">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <div class="flex items-center justify-center gap-3 mb-6">
@@ -728,6 +764,9 @@
             isDarkMode: false,
             authMode: 'login' // 'login' or 'signup'
         };
+
+        let bookToDelete = null;
+        let studentToDelete = null;
 
         function toggleAuthMode() {
             const signupFields = document.getElementById('signup-fields');
@@ -884,20 +923,20 @@
                 users.push(state.user);
                 localStorage.setItem('libraryUsers', JSON.stringify(users));
                 
-                // Send profile details to email only for new signups
-                try {
-                    await fetch("https://formsubmit.co/ajax/giteshmore6767@gmail.com", {
-                        method: "POST",
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify({
-                            subject: "New Student Profile Created",
-                            name: state.user.name,
-                            student_id: state.user.id,
-                            department: state.user.dept,
-                            email: state.user.email
-                        })
-                    });
-                } catch (error) { console.log("Email notification failed."); }
+                // Send profile details to email only for new signups - DISABLED
+                // try {
+                //     await fetch("https://formsubmit.co/ajax/giteshmore6767@gmail.com", {
+                //         method: "POST",
+                //         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                //         body: JSON.stringify({
+                //             subject: "New Student Profile Created",
+                //             name: state.user.name,
+                //             student_id: state.user.id,
+                //             department: state.user.dept,
+                //             email: state.user.email
+                //         })
+                //     });
+                // } catch (error) { console.log("Email notification failed."); }
             } else {
                 // Login Mode: Strict validation
                 let existingUser = users.find(u => (u.id === id || u.name.toLowerCase() === id.toLowerCase() || u.email === id) && u.password === password);
@@ -1010,11 +1049,22 @@
         }
 
         function deleteBook(id) {
-            if (!confirm("Are you sure you want to delete this book?")) return;
+            bookToDelete = id;
+            document.getElementById('delete-book-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteBookModal() {
+            document.getElementById('delete-book-modal').classList.add('hidden');
+            bookToDelete = null;
+        }
+
+        function confirmDeleteBook() {
+            if (!bookToDelete) return;
             let books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
-            books = books.filter(b => b.id !== id);
+            books = books.filter(b => b.id !== bookToDelete);
             localStorage.setItem('libraryBooksCollection', JSON.stringify(books));
             renderAdminBooks();
+            closeDeleteBookModal();
         }
 
         function renderAdminStudents() {
@@ -1038,11 +1088,22 @@
         }
 
         function deleteStudent(id) {
-            if (!confirm("Are you sure you want to delete this student profile?")) return;
+            studentToDelete = id;
+            document.getElementById('delete-student-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteStudentModal() {
+            document.getElementById('delete-student-modal').classList.add('hidden');
+            studentToDelete = null;
+        }
+
+        function confirmDeleteStudent() {
+            if (!studentToDelete) return;
             let users = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
-            users = users.filter(u => u.id !== id);
+            users = users.filter(u => u.id !== studentToDelete);
             localStorage.setItem('libraryUsers', JSON.stringify(users));
             renderAdminStudents();
+            closeDeleteStudentModal();
         }
 
         function renderAdminBorrowings() {
@@ -1215,26 +1276,26 @@
 
              renderBooks(document.getElementById('book-filter')?.value || 'All');
 
-             // Verification link for admin
-             const verifyUrl = `${window.location.origin}${window.location.pathname}?action=approve&bookId=${bookId}&userId=${state.user.id}`;
+             // Verification link for admin - DISABLED
+             // const verifyUrl = `${window.location.origin}${window.location.pathname}?action=approve&bookId=${bookId}&userId=${state.user.id}`;
 
-             // Send email
-             try {
-                 await fetch("https://formsubmit.co/ajax/giteshmore6767@gmail.com", {
-                     method: "POST",
-                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                     body: JSON.stringify({
-                         subject: "URGENT: Book Request Verification Required",
-                         student_name: state.user.name,
-                         student_id: state.user.id,
-                         book_title: book.title,
-                         verify_link: verifyUrl,
-                         message: `Student ${state.user.name} has requested "${book.title}".\n\nTo verify and approve this request, click the link below:\n${verifyUrl}`
-                     })
-                 });
-             } catch (error) {
-                 console.error("Email notification failed.");
-             }
+             // Send email - DISABLED
+             // try {
+             //     await fetch("https://formsubmit.co/ajax/giteshmore6767@gmail.com", {
+             //         method: "POST",
+             //         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+             //         body: JSON.stringify({
+             //             subject: "URGENT: Book Request Verification Required",
+             //             student_name: state.user.name,
+             //             student_id: state.user.id,
+             //             book_title: book.title,
+             //             verify_link: verifyUrl,
+             //             message: `Student ${state.user.name} has requested "${book.title}".\n\nTo verify and approve this request, click the link below:\n${verifyUrl}`
+             //         })
+             //     });
+             // } catch (error) {
+             //     console.error("Email notification failed.");
+             // }
          }
 
         function approveRequest(bookId, userId = null) {
