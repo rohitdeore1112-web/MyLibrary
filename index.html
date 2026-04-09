@@ -429,6 +429,13 @@
                                     <!-- Requested books will be injected here -->
                                 </div>
                             </div>
+
+                            <div id="pending-returns-section" class="hidden">
+                                <h3 class="text-xl font-black text-slate-900 dark:text-white mb-6">Pending Returns</h3>
+                                <div id="return-requests-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Return requests will be injected here -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -518,14 +525,12 @@
         </section>
     <!-- Admin Section -->
     <section id="admin-section" class="hidden space-y-10 animate-fade-in">
-        <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
-            <div class="text-center lg:text-left">
+        <div class="flex justify-between items-center gap-6 mb-8">
                 <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Admin <span class="gradient-text">Dashboard</span></h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-2 text-lg">Centralized Control Center</p>
             </div>
             <!-- Admin Tabs -->
-            <div class="flex flex-wrap justify-center gap-2 p-1.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                <button onclick="showAdminTab('requests')" id="tab-requests" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all admin-tab-btn active-admin-tab">Requests</button>
+            <div class="flex flex-wrap justify-center gap-2 p-1.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm mb-10">
+                <button onclick="showAdminTab('activities')" id="tab-activities" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all admin-tab-btn active-admin-tab">Activities</button>
                 <button onclick="showAdminTab('books')" id="tab-books" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all admin-tab-btn">Books</button>
                 <button onclick="showAdminTab('students')" id="tab-students" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all admin-tab-btn">Students</button>
                 <button onclick="showAdminTab('borrowings')" id="tab-borrowings" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all admin-tab-btn">Borrowings</button>
@@ -533,8 +538,26 @@
             </div>
         </div>
         
-        <!-- Requests Tab -->
-        <div id="admin-requests-tab" class="admin-tab-content space-y-8 animate-fade-in">
+        <!-- Activities Tab (Combined Student Actions) -->
+        <div id="admin-activities-tab" class="admin-tab-content space-y-8 animate-fade-in">
+            <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800 shadow-xl">
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-8 flex items-center gap-3">
+                    <i class="fas fa-bell text-indigo-500"></i> Student Activities
+                </h3>
+                <div class="flex gap-2 mb-6 flex-wrap">
+                    <button onclick="filterActivities('all')" id="filter-all" class="px-4 py-2 rounded-xl font-bold text-sm transition bg-indigo-500 text-white">All</button>
+                    <button onclick="filterActivities('requests')" id="filter-requests" class="px-4 py-2 rounded-xl font-bold text-sm transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">Book Requests</button>
+                    <button onclick="filterActivities('feedback')" id="filter-feedback" class="px-4 py-2 rounded-xl font-bold text-sm transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">Feedback</button>
+                    <button onclick="filterActivities('profiles')" id="filter-profiles" class="px-4 py-2 rounded-xl font-bold text-sm transition bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200">New Profiles</button>
+                </div>
+                <div id="admin-activities-list" class="space-y-4">
+                    <!-- Activities injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Tab (Legacy - keeping for compatibility) -->
+        <div id="admin-requests-tab" class="admin-tab-content space-y-8 animate-fade-in hidden">
             <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800 shadow-xl">
                 <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-8 flex items-center gap-3">
                     <i class="fas fa-tasks text-indigo-500"></i> Pending Book Requests
@@ -637,9 +660,16 @@
     <!-- Edit Profile Modal -->
     <div id="edit-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-overlay" onclick="closeEditProfile()"></div>
-        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800">
-            <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-6">Update Profile</h2>
-            <form onsubmit="saveProfile(event)" class="space-y-4">
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div class="gradient-bg px-8 py-6 flex items-center justify-between">
+                <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                    <i class="fas fa-user-edit"></i> Update Profile
+                </h2>
+                <button onclick="closeEditProfile()" class="text-white/80 hover:text-white transition text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form onsubmit="saveProfile(event)" class="p-8 sm:p-10 space-y-4">
                 <div>
                     <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Name</label>
                     <input type="text" id="edit-name" required class="w-full px-6 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-100 dark:border-slate-800 focus:border-indigo-500 outline-none font-bold mt-2">
@@ -672,9 +702,9 @@
                         </label>
                     </div>
                 </div>
-                <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="closeEditProfile()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 transition">Cancel</button>
-                    <button type="submit" class="flex-1 py-4 gradient-bg text-white font-bold rounded-2xl hover:opacity-90 transition">Save</button>
+                <div class="flex gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeEditProfile()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
+                    <button type="submit" class="flex-1 py-4 gradient-bg text-white font-bold rounded-2xl hover:scale-[1.02] transition transform shadow-lg">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -683,9 +713,16 @@
     <!-- Add Book Modal -->
     <div id="add-book-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-overlay" onclick="closeAddBookModal()"></div>
-        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800">
-            <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-6">Add New Book</h2>
-            <form onsubmit="saveNewBook(event)" class="space-y-4">
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div class="gradient-bg px-8 py-6 flex items-center justify-between">
+                <h2 class="text-2xl font-black text-white flex items-center gap-3">
+                    <i class="fas fa-book-plus"></i> Add New Book
+                </h2>
+                <button onclick="closeAddBookModal()" class="text-white/80 hover:text-white transition text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form onsubmit="saveNewBook(event)" class="p-8 sm:p-10 space-y-4">
                 <div>
                     <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
                     <input type="text" id="new-book-title" required class="w-full px-6 py-4 rounded-2xl bg-slate-50 dark:bg-slate-800 dark:text-white border border-slate-100 dark:border-slate-800 focus:border-indigo-500 outline-none font-bold mt-2">
@@ -702,9 +739,9 @@
                         <option value="Literature">Literature</option>
                     </select>
                 </div>
-                <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="closeAddBookModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 transition">Cancel</button>
-                    <button type="submit" class="flex-1 py-4 gradient-bg text-white font-bold rounded-2xl hover:opacity-90 transition">Add Book</button>
+                <div class="flex gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeAddBookModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
+                    <button type="submit" class="flex-1 py-4 gradient-bg text-white font-bold rounded-2xl hover:scale-[1.02] transition transform shadow-lg">Add Book</button>
                 </div>
             </form>
         </div>
@@ -713,16 +750,19 @@
     <!-- Delete Book Confirmation Modal -->
     <div id="delete-book-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-overlay" onclick="closeDeleteBookModal()"></div>
-        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-exclamation-triangle text-rose-600 dark:text-rose-400 text-2xl"></i>
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div class="bg-rose-50 dark:bg-rose-900/20 px-8 py-8 border-b border-slate-100 dark:border-slate-800 text-center">
+                <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <i class="fas fa-exclamation-triangle text-rose-600 dark:text-rose-400 text-3xl"></i>
                 </div>
-                <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-4">Delete Book</h2>
-                <p class="text-slate-600 dark:text-slate-400 mb-8">Are you sure you want to delete this book? This action cannot be undone.</p>
+                <h2 class="text-2xl font-black text-slate-900 dark:text-white">Delete Book</h2>
+                <p class="text-slate-600 dark:text-slate-400 mt-2 font-medium">This action cannot be undone.</p>
+            </div>
+            <div class="p-8">
+                <p class="text-slate-600 dark:text-slate-400 mb-8">Are you sure you want to delete this book from the library collection?</p>
                 <div class="flex gap-4">
                     <button onclick="closeDeleteBookModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
-                    <button onclick="confirmDeleteBook()" class="flex-1 py-4 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition">Delete</button>
+                    <button onclick="confirmDeleteBook()" class="flex-1 py-4 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition shadow-lg hover:scale-[1.02] transform">Delete Permanently</button>
                 </div>
             </div>
         </div>
@@ -731,16 +771,38 @@
     <!-- Delete Student Confirmation Modal -->
     <div id="delete-student-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 modal-overlay" onclick="closeDeleteStudentModal()"></div>
-        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-exclamation-triangle text-rose-600 dark:text-rose-400 text-2xl"></i>
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div class="bg-rose-50 dark:bg-rose-900/20 px-8 py-8 border-b border-slate-100 dark:border-slate-800 text-center">
+                <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <i class="fas fa-exclamation-triangle text-rose-600 dark:text-rose-400 text-3xl"></i>
                 </div>
-                <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-4">Delete Student</h2>
-                <p class="text-slate-600 dark:text-slate-400 mb-8">Are you sure you want to delete this student profile? This action cannot be undone.</p>
+                <h2 class="text-2xl font-black text-slate-900 dark:text-white">Delete Student</h2>
+                <p class="text-slate-600 dark:text-slate-400 mt-2 font-medium">This action cannot be undone.</p>
+            </div>
+            <div class="p-8">
+                <p class="text-slate-600 dark:text-slate-400 mb-8">Are you sure you want to delete this student profile and all their records?</p>
                 <div class="flex gap-4">
                     <button onclick="closeDeleteStudentModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancel</button>
-                    <button onclick="confirmDeleteStudent()" class="flex-1 py-4 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition">Delete</button>
+                    <button onclick="confirmDeleteStudent()" class="flex-1 py-4 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition shadow-lg hover:scale-[1.02] transform">Delete Permanently</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 modal-overlay" onclick="closeNotification()"></div>
+        <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-md relative z-10 animate-fade-in shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div id="notification-header" class="px-8 py-8 border-b border-slate-100 dark:border-slate-800 text-center">
+                <div id="notification-icon" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl"></div>
+                <h2 id="notification-title" class="text-2xl font-black text-slate-900 dark:text-white"></h2>
+                <p id="notification-subtitle" class="text-slate-600 dark:text-slate-400 mt-2 font-medium hidden"></p>
+            </div>
+            <div class="p-8">
+                <p id="notification-message" class="text-slate-600 dark:text-slate-400 mb-8 font-medium whitespace-pre-wrap leading-relaxed"></p>
+                <div class="flex gap-4">
+                    <button id="notification-btn-cancel" onclick="closeNotification()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl hover:bg-slate-200 dark:hover:bg-slate-700 transition hidden">Cancel</button>
+                    <button id="notification-btn-confirm" onclick="confirmNotification()" class="flex-1 py-4 gradient-bg text-white font-bold rounded-2xl hover:scale-[1.02] transition transform shadow-lg">OK</button>
                 </div>
             </div>
         </div>
@@ -767,6 +829,29 @@
 
         let bookToDelete = null;
         let studentToDelete = null;
+        let activityFilter = 'all';
+
+        // Track Student Activities
+        function logActivity(type, studentId, studentName, department, details) {
+            let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+            const activity = {
+                id: Date.now(),
+                type: type, // 'book_request', 'feedback', 'profile_created'
+                studentId: studentId,
+                studentName: studentName,
+                department: department,
+                details: details,
+                timestamp: new Date().toLocaleString(),
+                status: 'pending' // pending, approved, completed
+            };
+            activities.unshift(activity);
+            localStorage.setItem('studentActivities', JSON.stringify(activities));
+            
+            // If admin is viewing, update the display
+            if (state.user && state.user.role === 'admin' && state.currentView === 'admin' && document.getElementById('admin-activities-tab') && !document.getElementById('admin-activities-tab').classList.contains('hidden')) {
+                renderAdminActivities();
+            }
+        }
 
         function toggleAuthMode() {
             const signupFields = document.getElementById('signup-fields');
@@ -807,16 +892,27 @@
             }
         }
 
-        const booksData = [
-            { id: 1, title: "Modern Web Design", author: "Jane Smith", category: "Technology", available: true },
-            { id: 2, title: "Quantum Physics", author: "Niels Bohr", category: "Science", available: false },
-            { id: 3, title: "Digital Systems", author: "Morris Mano", category: "Technology", available: true },
-            { id: 4, title: "The Great Gatsby", author: "F. Scott Fitzgerald", category: "Literature", available: true },
-            { id: 5, title: "Clean Code", author: "Robert Martin", category: "Technology", available: false },
-            { id: 6, title: "Cosmos", author: "Carl Sagan", category: "Science", available: true },
-            { id: 7, title: "To Kill a Mockingbird", author: "Harper Lee", category: "Literature", available: true },
-            { id: 8, title: "Artificial Intelligence", author: "Stuart Russell", category: "Technology", available: true }
-        ];
+        const booksData = [];
+
+        // Inventory helper functions
+        function getAvailableCopies(book) {
+            return book.totalCopies - book.borrowedCopies;
+        }
+
+        function getInventoryStatus(book) {
+            const available = getAvailableCopies(book);
+            const percentage = (available / book.totalCopies) * 100;
+            
+            if (available === 0) {
+                return { status: 'Out of Stock', color: 'bg-rose-500', percentage: 0 };
+            } else if (percentage <= 25) {
+                return { status: 'Low Stock', color: 'bg-orange-500', percentage };
+            } else if (percentage <= 50) {
+                return { status: 'Moderate', color: 'bg-amber-500', percentage };
+            } else {
+                return { status: 'In Stock', color: 'bg-green-500', percentage };
+            }
+        }
 
         function toggleDarkMode() {
             state.isDarkMode = !state.isDarkMode;
@@ -853,6 +949,14 @@
                 date: new Date().toLocaleString()
             };
 
+            // Log activity
+            logActivity('feedback', feedback.studentId, feedback.studentName, feedback.department, {
+                rating: feedback.rating,
+                staff: feedback.staff,
+                situation: feedback.situation,
+                suggestions: feedback.suggestions
+            });
+
             // Save locally
             let allFeedback = JSON.parse(localStorage.getItem('libraryFeedback') || '[]');
             allFeedback.unshift(feedback);
@@ -868,11 +972,12 @@
                         ...feedback
                     })
                 });
-                alert("Feedback sent successfully! Thank you.");
-                form.reset();
-                showSection('dashboard');
+                showNotification('Feedback Sent!', 'Your feedback has been submitted successfully. Thank you for your valuable input.', 'success', 'Success', false, () => {
+                    form.reset();
+                    showSection('dashboard');
+                });
             } catch (error) {
-                alert("Saved locally, but email failed to send.");
+                showNotification('Saved Locally', 'Your feedback was saved locally, but email notification failed to send.', 'info');
             }
         }
 
@@ -922,6 +1027,12 @@
                 
                 users.push(state.user);
                 localStorage.setItem('libraryUsers', JSON.stringify(users));
+                
+                // Log Profil Creation Activity
+                logActivity('profile_created', state.user.id, state.user.name, state.user.dept, {
+                    email: state.user.email,
+                    profileCreatedAt: new Date().toLocaleString()
+                });
                 
                 // Send profile details to email only for new signups - DISABLED
                 // try {
@@ -980,31 +1091,202 @@
             document.getElementById(`admin-${tab}-tab`).classList.remove('hidden');
             document.getElementById(`tab-${tab}`).classList.add('active-admin-tab');
 
+            if (tab === 'activities') renderAdminActivities();
             if (tab === 'books') renderAdminBooks();
             if (tab === 'students') renderAdminStudents();
             if (tab === 'borrowings') renderAdminBorrowings();
             if (tab === 'feedback') renderAdminFeedback();
         }
 
+        function filterActivities(type) {
+            activityFilter = type;
+            document.querySelectorAll('[id^="filter-"]').forEach(el => {
+                el.classList.remove('!bg-indigo-500', '!text-white');
+                el.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
+            });
+            document.getElementById(`filter-${type}`).classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-300');
+            document.getElementById(`filter-${type}`).classList.add('!bg-indigo-500', '!text-white');
+            renderAdminActivities();
+        }
+
+        function renderAdminActivities() {
+            const list = document.getElementById('admin-activities-list');
+            let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+            
+            // Filter by selected type
+            if (activityFilter !== 'all') {
+                activities = activities.filter(a => {
+                    if (activityFilter === 'requests') return a.type === 'book_request';
+                    if (activityFilter === 'feedback') return a.type === 'feedback';
+                    if (activityFilter === 'profiles') return a.type === 'profile_created';
+                    return true;
+                });
+            }
+
+            if (activities.length === 0) {
+                list.innerHTML = '<p class="text-slate-400 text-sm font-bold p-10 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-100 dark:border-slate-800 text-center">No student activities yet.</p>';
+                return;
+            }
+
+            list.innerHTML = activities.map(activity => {
+                let icon, title, color, actions = '';
+                let statusBadge = getStatusBadge(activity.status);
+                
+                if (activity.type === 'book_request') {
+                    icon = '<i class="fas fa-book text-blue-500"></i>';
+                    title = `<strong>${activity.studentName}</strong> requested <strong>"${activity.details.bookTitle}"</strong>`;
+                    color = 'bg-blue-50 dark:bg-blue-900/20';
+                    
+                    if (activity.status === 'pending') {
+                        actions = `<button onclick="approveRequest(${activity.details.bookId}, '${activity.studentId}')" class="px-4 py-2 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 transition">Approve</button>
+                                  <button onclick="rejectActivity(${activity.id})" class="px-4 py-2 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600 transition">Reject</button>`;
+                    } else if (activity.status === 'approved') {
+                        actions = `<span class="px-4 py-2 bg-green-100 text-green-700 text-xs font-bold rounded-lg">✓ Approved</span>`;
+                    } else if (activity.status === 'rejected') {
+                        actions = `<span class="px-4 py-2 bg-rose-100 text-rose-700 text-xs font-bold rounded-lg">✗ Rejected</span>`;
+                    }
+                } else if (activity.type === 'feedback') {
+                    icon = '<i class="fas fa-star text-amber-500"></i>';
+                    title = `<strong>${activity.studentName}</strong> submitted feedback (${activity.details.rating}⭐)`;
+                    color = 'bg-amber-50 dark:bg-amber-900/20';
+                    
+                    if (activity.status === 'pending') {
+                        actions = `<button onclick="viewActivityDetails(${activity.id})" class="px-4 py-2 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition">View Details</button>
+                                  <button onclick="markFeedbackAsReviewed(${activity.id})" class="px-4 py-2 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 transition">Mark Reviewed</button>`;
+                    } else if (activity.status === 'approved') {
+                        actions = `<button onclick="viewActivityDetails(${activity.id})" class="px-4 py-2 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition">View Details</button>
+                                  <span class="px-4 py-2 bg-green-100 text-green-700 text-xs font-bold rounded-lg">✓ Reviewed</span>`;
+                    }
+                } else if (activity.type === 'profile_created') {
+                    icon = '<i class="fas fa-user-plus text-green-500"></i>';
+                    title = `New student <strong>${activity.studentName}</strong> created profile`;
+                    color = 'bg-green-50 dark:bg-green-900/20';
+                    
+                    if (activity.status === 'pending') {
+                        actions = `<button onclick="viewStudentProfile('${activity.studentId}')" class="px-4 py-2 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition">View Profile</button>
+                                  <button onclick="markProfileAsVerified(${activity.id})" class="px-4 py-2 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 transition">Mark Verified</button>`;
+                    } else if (activity.status === 'approved') {
+                        actions = `<button onclick="viewStudentProfile('${activity.studentId}')" class="px-4 py-2 bg-indigo-500 text-white text-xs font-bold rounded-lg hover:bg-indigo-600 transition">View Profile</button>
+                                  <span class="px-4 py-2 bg-green-100 text-green-700 text-xs font-bold rounded-lg">✓ Verified</span>`;
+                    }
+                }
+
+                return `
+                    <div class="p-6 ${color} rounded-2xl border border-slate-100 dark:border-slate-800 flex justify-between items-start gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="text-2xl">${icon}</div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-sm text-slate-700 dark:text-slate-300">${title}</p>
+                                        ${statusBadge}
+                                    </div>
+                                    <div class="flex gap-3 mt-2 text-[10px] text-slate-500 dark:text-slate-400">
+                                        <span><strong>ID:</strong> ${activity.studentId}</span>
+                                        <span><strong>Dept:</strong> ${activity.department}</span>
+                                        <span><strong>Time:</strong> ${activity.timestamp}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 flex-wrap justify-end">
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusBadge(status) {
+            if (status === 'pending') {
+                return '<span class="px-2 py-1 bg-amber-100 text-amber-700 text-[8px] font-black rounded-full uppercase">⏳ Pending</span>';
+            } else if (status === 'approved') {
+                return '<span class="px-2 py-1 bg-green-100 text-green-700 text-[8px] font-black rounded-full uppercase">✓ Approved</span>';
+            } else if (status === 'rejected') {
+                return '<span class="px-2 py-1 bg-rose-100 text-rose-700 text-[8px] font-black rounded-full uppercase">✗ Rejected</span>';
+            }
+            return '';
+        }
+
+        function markFeedbackAsReviewed(activityId) {
+            let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+            const activity = activities.find(a => a.id === activityId);
+            if (activity) {
+                activity.status = 'approved';
+                localStorage.setItem('studentActivities', JSON.stringify(activities));
+                renderAdminActivities();
+            }
+        }
+
+        function markProfileAsVerified(activityId) {
+            let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+            const activity = activities.find(a => a.id === activityId);
+            if (activity) {
+                activity.status = 'approved';
+                localStorage.setItem('studentActivities', JSON.stringify(activities));
+                renderAdminActivities();
+            }
+        }
+
+        function rejectActivity(activityId) {
+            let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+            const activity = activities.find(a => a.id === activityId);
+            if (activity) {
+                activity.status = 'rejected';
+                localStorage.setItem('studentActivities', JSON.stringify(activities));
+                renderAdminActivities();
+            }
+        }
+
+        function viewActivityDetails(activityId) {
+            let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+            const activity = activities.find(a => a.id === activityId);
+            if (activity && activity.type === 'feedback') {
+                const message = `Rating: ${activity.details.rating}⭐\nStaff: ${activity.details.staff}\nSituation: ${activity.details.situation}\nSuggestions: "${activity.details.suggestions}"`;
+                showNotification('Feedback Details', message, 'info', `From: ${activity.studentName}`);
+            }
+        }
+
+        function viewStudentProfile(studentId) {
+            let users = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
+            const student = users.find(u => u.id === studentId);
+            if (student) {
+                const message = `ID: ${student.id}\nEmail: ${student.email}\nDepartment: ${student.dept}`;
+                showNotification('Student Profile', message, 'info', `${student.name}`);
+            }
+        }
+
         function renderAdminBooks() {
             const list = document.getElementById('admin-books-list');
             const books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
             
-            list.innerHTML = books.map(book => `
+            list.innerHTML = books.map(book => {
+                const availableCopies = getAvailableCopies(book);
+                const inventoryStatus = getInventoryStatus(book);
+                return `
                 <tr class="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition">
                     <td class="py-4 font-bold text-slate-800 dark:text-white">${book.title}</td>
                     <td class="py-4 text-slate-500 text-sm font-medium">${book.author}</td>
                     <td class="py-4"><span class="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded-lg uppercase">${book.category}</span></td>
                     <td class="py-4 text-center">
-                        <button onclick="toggleBookStatus(${book.id})" class="px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition ${book.available ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-rose-100 text-rose-600 hover:bg-rose-200'}">
-                            ${book.available ? 'Available' : 'Borrowed'}
-                        </button>
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="px-3 py-1.5 ${inventoryStatus.color} text-white text-[10px] font-black rounded-full uppercase">${inventoryStatus.status}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Available:</span>
+                                <span class="text-sm font-black text-slate-800 dark:text-white">${availableCopies}/${book.totalCopies}</span>
+                            </div>
+                        </div>
                     </td>
                     <td class="py-4 text-center">
-                        <button onclick="deleteBook(${book.id})" class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition"><i class="fas fa-trash"></i></button>
+                        <div class="flex gap-2 justify-center">
+                            <button onclick="increaseBookCopies(${book.id})" class="p-2 text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition" title="Add Copy"><i class="fas fa-plus"></i></button>
+                            <button onclick="decreaseBookCopies(${book.id})" class="p-2 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition" title="Remove Copy"><i class="fas fa-minus"></i></button>
+                            <button onclick="deleteBook(${book.id})" class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition" title="Delete Book"><i class="fas fa-trash"></i></button>
+                        </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function openAddBookModal() {
@@ -1027,7 +1309,8 @@
                 title,
                 author,
                 category,
-                available: true
+                totalCopies: 3,
+                borrowedCopies: 0
             };
             
             books.push(newBook);
@@ -1036,15 +1319,238 @@
             closeAddBookModal();
             renderAdminBooks();
             event.target.reset();
+            showNotification('Book Added', `"${title}" by ${author} added with 3 copies to the library collection.`, 'success', 'Success');
         }
 
-        function toggleBookStatus(id) {
+        function increaseBookCopies(id) {
             let books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
             const bookIdx = books.findIndex(b => b.id === id);
             if (bookIdx !== -1) {
-                books[bookIdx].available = !books[bookIdx].available;
+                books[bookIdx].totalCopies += 1;
                 localStorage.setItem('libraryBooksCollection', JSON.stringify(books));
                 renderAdminBooks();
+                showNotification('Stock Updated', `Added 1 copy. Total: ${books[bookIdx].totalCopies}`, 'success', 'Inventory Increased');
+            }
+        }
+
+        function decreaseBookCopies(id) {
+            let books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
+            const bookIdx = books.findIndex(b => b.id === id);
+            if (bookIdx !== -1) {
+                if (books[bookIdx].totalCopies > books[bookIdx].borrowedCopies) {
+                    books[bookIdx].totalCopies -= 1;
+                    localStorage.setItem('libraryBooksCollection', JSON.stringify(books));
+                    renderAdminBooks();
+                    showNotification('Stock Updated', `Removed 1 copy. Total: ${books[bookIdx].totalCopies}`, 'success', 'Inventory Decreased');
+                } else {
+                    showNotification('Cannot Remove', 'All copies are currently borrowed. Cannot decrease stock.', 'error', 'Operation Failed');
+                }
+            }
+        }
+
+        function requestReturn(bookId) {
+            const books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
+            const book = books.find(b => b.id === bookId);
+            if (!book) return;
+
+            // Add to return requests
+            if (!state.user.returnRequests) state.user.returnRequests = [];
+            state.user.returnRequests.push(bookId);
+            
+            // Save to localStorage
+            let users = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
+            const userIdx = users.findIndex(u => u.id === state.user.id);
+            if (userIdx !== -1) {
+                if (!users[userIdx].returnRequests) users[userIdx].returnRequests = [];
+                users[userIdx].returnRequests.push(bookId);
+                localStorage.setItem('libraryUsers', JSON.stringify(users));
+                localStorage.setItem('userSession', JSON.stringify(state.user));
+            }
+
+            // Log Activity
+            logActivity('book_return_request', state.user.id, state.user.name, state.user.dept, {
+                bookId: bookId,
+                bookTitle: book.title,
+                requestedAt: new Date().toLocaleString()
+            });
+
+            renderProfile();
+            showNotification('Return Request Submitted', `Your return request for "${book.title}" has been submitted to the admin. They will process it soon.`, 'success', 'Pending Admin Approval');
+        }
+
+        function approveReturn(bookId, userId) {
+            const books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
+            const book = books.find(b => b.id === bookId);
+            if (!book) return;
+
+            let users = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
+            const userIdx = users.findIndex(u => u.id === userId);
+
+            if (userIdx !== -1) {
+                const user = users[userIdx];
+                
+                // Remove from borrowed books
+                if (user.borrowedBooks) {
+                    user.borrowedBooks = user.borrowedBooks.filter(b => b.id !== bookId);
+                }
+                
+                // Remove from return requests
+                if (user.returnRequests) {
+                    user.returnRequests = user.returnRequests.filter(id => id !== bookId);
+                }
+
+                // Increase available copies
+                if (book.borrowedCopies > 0) {
+                    book.borrowedCopies -= 1;
+                }
+
+                localStorage.setItem('libraryUsers', JSON.stringify(users));
+                localStorage.setItem('libraryBooksCollection', JSON.stringify(books));
+                
+                // Mark activity as approved
+                let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+                const actIndex = activities.findIndex(a => 
+                    a.type === 'book_return_request' && 
+                    a.studentId === userId && 
+                    a.details.bookId === bookId
+                );
+                if (actIndex !== -1) {
+                    activities[actIndex].status = 'approved';
+                    localStorage.setItem('studentActivities', JSON.stringify(activities));
+                }
+                
+                renderAdminBooks();
+                renderAdminRequests();
+                renderAdminBorrowings();
+                showNotification('Return Approved', `"${book.title}" return has been approved. Inventory updated.`, 'success', 'Return Processed');
+            }
+        }
+
+        function rejectReturn(bookId, userId) {
+            let users = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
+            const userIdx = users.findIndex(u => u.id === userId);
+
+            if (userIdx !== -1) {
+                const user = users[userIdx];
+                
+                // Remove from return requests
+                if (user.returnRequests) {
+                    user.returnRequests = user.returnRequests.filter(id => id !== bookId);
+                }
+
+                localStorage.setItem('libraryUsers', JSON.stringify(users));
+                
+                // Mark activity as rejected
+                let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+                const actIndex = activities.findIndex(a => 
+                    a.type === 'book_return_request' && 
+                    a.studentId === userId && 
+                    a.details.bookId === bookId
+                );
+                if (actIndex !== -1) {
+                    activities[actIndex].status = 'rejected';
+                    localStorage.setItem('studentActivities', JSON.stringify(activities));
+                }
+                
+                renderAdminRequests();
+                showNotification('Return Rejected', `Return request has been rejected.`, 'error', 'Action Taken');
+            }
+        }
+
+        function renderAdminRequests() {
+            const adminList = document.getElementById('admin-requests-list');
+            if (!adminList || state.user.role !== 'admin') return;
+            
+            adminList.innerHTML = '';
+            let allUsers = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
+            let allBooks = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
+            let totalRequests = 0;
+            
+            // Show Borrow Requests
+            allUsers.forEach(user => {
+                if (user.requestedBooks && user.requestedBooks.length > 0) {
+                    user.requestedBooks.forEach(bookId => {
+                        const book = allBooks.find(b => b.id === bookId);
+                        if (book) {
+                            totalRequests++;
+                            adminList.innerHTML += `
+                                <div class="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 animate-fade-in flex flex-col gap-4">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white text-xs">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-bold text-slate-800 dark:text-white text-sm">${user.name}</h5>
+                                                <p class="text-[10px] text-slate-400 font-bold">${user.dept}</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-600 text-[8px] font-black rounded-full uppercase">Borrow Request</span>
+                                    </div>
+                                    <div class="py-3 border-y border-slate-100 dark:border-slate-800">
+                                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Requested Book</p>
+                                        <h4 class="font-black text-slate-800 dark:text-white">${book.title}</h4>
+                                    </div>
+                                    <button onclick="approveRequest(${book.id}, '${user.id}')" class="w-full py-3 gradient-bg text-white text-xs font-black rounded-xl shadow-lg hover:scale-[1.02] transition transform">
+                                        Approve Borrow
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            });
+
+            // Show Return Requests
+            allUsers.forEach(user => {
+                if (user.returnRequests && user.returnRequests.length > 0) {
+                    user.returnRequests.forEach(bookId => {
+                        const book = allBooks.find(b => b.id === bookId);
+                        if (book) {
+                            totalRequests++;
+                            adminList.innerHTML += `
+                                <div class="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 animate-fade-in flex flex-col gap-4">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center text-white text-xs">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-bold text-slate-800 dark:text-white text-sm">${user.name}</h5>
+                                                <p class="text-[10px] text-slate-400 font-bold">${user.dept}</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-1 bg-green-100 text-green-600 text-[8px] font-black rounded-full uppercase">Return Request</span>
+                                    </div>
+                                    <div class="py-3 border-y border-slate-100 dark:border-slate-800">
+                                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Book to Return</p>
+                                        <h4 class="font-black text-slate-800 dark:text-white">${book.title}</h4>
+                                    </div>
+                                    <div class="flex gap-3">
+                                        <button onclick="approveReturn(${book.id}, '${user.id}')" class="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white text-xs font-black rounded-xl shadow-lg transition transform">
+                                            Approve Return
+                                        </button>
+                                        <button onclick="rejectReturn(${book.id}, '${user.id}')" class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-xl shadow-lg transition transform">
+                                            Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            });
+
+            if (totalRequests === 0) {
+                adminList.innerHTML = '<p class="col-span-full text-slate-400 text-sm font-bold p-10 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-100 dark:border-slate-800 text-center">No pending requests across the system.</p>';
+            }
+        }
+
+        function renderAdminBorrowings() {
+            // This function can be used to refresh the borrowings section if needed
+            const browsingList = document.getElementById('admin-borrow-list');
+            if (browsingList) {
+                // Refresh will happen in updateUI
             }
         }
 
@@ -1061,10 +1567,14 @@
         function confirmDeleteBook() {
             if (!bookToDelete) return;
             let books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
+            const book = books.find(b => b.id === bookToDelete);
+            const bookTitle = book ? book.title : 'Book';
+            
             books = books.filter(b => b.id !== bookToDelete);
             localStorage.setItem('libraryBooksCollection', JSON.stringify(books));
             renderAdminBooks();
             closeDeleteBookModal();
+            showNotification('Book Deleted', `"${bookTitle}" has been permanently removed from the library collection.`, 'success', 'Deletion Confirmed');
         }
 
         function renderAdminStudents() {
@@ -1100,10 +1610,14 @@
         function confirmDeleteStudent() {
             if (!studentToDelete) return;
             let users = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
+            const student = users.find(u => u.id === studentToDelete);
+            const studentName = student ? student.name : 'Student';
+            
             users = users.filter(u => u.id !== studentToDelete);
             localStorage.setItem('libraryUsers', JSON.stringify(users));
             renderAdminStudents();
             closeDeleteStudentModal();
+            showNotification('Student Deleted', `${studentName}'s profile and all associated records have been permanently removed.`, 'success', 'Deletion Confirmed');
         }
 
         function renderAdminBorrowings() {
@@ -1218,25 +1732,32 @@
             const books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
             const filtered = filter === 'All' ? books : books.filter(b => b.category === filter);
             
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-16"><div class="inline-block p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700"><i class="fas fa-book text-4xl text-slate-300 dark:text-slate-600 mb-4 block"></i><p class="text-slate-500 dark:text-slate-400 font-bold text-lg">No Books Available</p><p class="text-slate-400 dark:text-slate-500 text-sm mt-2">Admin will add books soon. Check back later!</p></div></div>';
+                return;
+            }
+            
             filtered.forEach(book => {
                 const isRequested = state.user.requestedBooks?.includes(book.id);
                 const isBorrowed = state.user.borrowedBooks?.some(b => b.id === book.id);
+                const availableCopies = getAvailableCopies(book);
+                const inventoryStatus = getInventoryStatus(book);
                 
-                let statusColor = book.available ? 'bg-green-500' : 'bg-rose-500';
-                let statusText = book.available ? 'Available' : 'Borrowed';
-                let buttonClass = book.available ? 'bg-slate-900 dark:bg-indigo-600 hover:bg-indigo-600 dark:hover:bg-indigo-700' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed';
-                let buttonText = book.available ? 'Request Book' : 'Join Waitlist';
-                let onclickAction = book.available ? `onclick="requestBook(${book.id})"` : '';
+                let statusBadge = inventoryStatus.status;
+                let statusColor = inventoryStatus.color;
+                let buttonClass = availableCopies > 0 ? 'bg-slate-900 dark:bg-indigo-600 hover:bg-indigo-600 dark:hover:bg-indigo-700' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed';
+                let buttonText = availableCopies > 0 ? 'Request Book' : 'Unavailable';
+                let onclickAction = availableCopies > 0 ? `onclick="requestBook(${book.id})"` : '';
 
                 if (isRequested) {
+                    statusBadge = 'Requested';
                     statusColor = 'bg-amber-500';
-                    statusText = 'Requested';
                     buttonClass = 'bg-amber-100 text-amber-600 cursor-default border border-amber-200';
                     buttonText = 'Request Pending';
                     onclickAction = '';
                 } else if (isBorrowed) {
+                    statusBadge = 'In Your Bag';
                     statusColor = 'bg-indigo-500';
-                    statusText = 'In Your Bag';
                     buttonClass = 'bg-indigo-100 text-indigo-600 cursor-default border border-indigo-200';
                     buttonText = 'Already Borrowed';
                     onclickAction = '';
@@ -1246,11 +1767,21 @@
                     <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm card-hover group animate-fade-in">
                         <div class="aspect-[3/4] bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl mb-6 flex items-center justify-center relative overflow-hidden">
                             <i class="fas fa-book text-indigo-200 dark:text-indigo-800 text-6xl group-hover:scale-110 transition duration-500"></i>
-                            <div class="absolute top-4 right-4 px-3 py-1 ${statusColor} text-white text-[10px] font-black rounded-full uppercase shadow-lg">${statusText}</div>
+                            <div class="absolute top-4 right-4 px-3 py-1 ${statusColor} text-white text-[10px] font-black rounded-full uppercase shadow-lg">${statusBadge}</div>
+                            <div class="absolute top-4 left-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-slate-900 dark:text-white shadow-lg">${availableCopies}/${book.totalCopies}</div>
                         </div>
                         <h4 class="font-black text-slate-800 dark:text-white text-lg leading-tight mb-1">${book.title}</h4>
-                        <p class="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest">${book.author} • ${book.category}</p>
-                        <button ${onclickAction} class="w-full mt-6 py-4 ${buttonClass} ${book.available && !isRequested && !isBorrowed ? 'text-white' : ''} font-bold rounded-2xl transition shadow-lg shadow-slate-100 dark:shadow-none">${buttonText}</button>
+                        <p class="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest mb-3">${book.author} • ${book.category}</p>
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Available</span>
+                                <span class="text-xs font-black text-slate-600 dark:text-slate-300">${availableCopies} of ${book.totalCopies}</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full ${inventoryStatus.color} rounded-full transition-all duration-300" style="width: ${inventoryStatus.percentage}%"></div>
+                            </div>
+                        </div>
+                        <button ${onclickAction} class="w-full mt-2 py-4 ${buttonClass} ${availableCopies > 0 && !isRequested && !isBorrowed ? 'text-white' : ''} font-bold rounded-2xl transition shadow-lg shadow-slate-100 dark:shadow-none">${buttonText}</button>
                     </div>
                 `;
             });
@@ -1274,7 +1805,17 @@
                  localStorage.setItem('userSession', JSON.stringify(state.user));
              }
 
+             // Log Activity
+             logActivity('book_request', state.user.id, state.user.name, state.user.dept, {
+                 bookId: bookId,
+                 bookTitle: book.title,
+                 bookAuthor: book.author,
+                 requestedAt: new Date().toLocaleString()
+             });
+
              renderBooks(document.getElementById('book-filter')?.value || 'All');
+
+             showNotification('Request Submitted', `Your request for "${book.title}" has been submitted to the admin. You'll be notified once it's approved.`, 'success', 'Pending Approval');
 
              // Verification link for admin - DISABLED
              // const verifyUrl = `${window.location.origin}${window.location.pathname}?action=approve&bookId=${bookId}&userId=${state.user.id}`;
@@ -1303,6 +1844,13 @@
               const book = books.find(b => b.id === bookId);
               if (!book) return;
 
+              // Check if copies available
+              const availableCopies = getAvailableCopies(book);
+              if (availableCopies <= 0) {
+                  showNotification('No Copies Available', `Unfortunately, "${book.title}" has no copies available at the moment.`, 'error', 'Out of Stock');
+                  return;
+              }
+
               let users = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
              const targetUserId = userId || state.user.id;
              const userIdx = users.findIndex(u => u.id === targetUserId);
@@ -1326,7 +1874,23 @@
                      daysLeft: 15
                  });
 
+                 // Decrease available copies
+                 book.borrowedCopies += 1;
+
                  localStorage.setItem('libraryUsers', JSON.stringify(users));
+                 localStorage.setItem('libraryBooksCollection', JSON.stringify(books));
+                 
+                 // Mark activity as approved
+                 let activities = JSON.parse(localStorage.getItem('studentActivities') || '[]');
+                 const actIndex = activities.findIndex(a => 
+                     a.type === 'book_request' && 
+                     a.studentId === targetUserId && 
+                     a.details.bookId === bookId
+                 );
+                 if (actIndex !== -1) {
+                     activities[actIndex].status = 'approved';
+                     localStorage.setItem('studentActivities', JSON.stringify(activities));
+                 }
                  
                  // If the logged-in user is the one getting approved, update their session
                  if (state.user && state.user.id === targetUserId) {
@@ -1334,11 +1898,13 @@
                      localStorage.setItem('userSession', JSON.stringify(state.user));
                  }
                  
-                 alert(`Request approved for ${user.name}!`);
+                 const newAvailable = getAvailableCopies(book);
+                 showNotification('Request Approved', `Book request for "${book.title}" approved! ${newAvailable} copies remaining.`, 'success', 'Approval Confirmed');
              }
 
              updateUI();
              if (state.currentView === 'explore') renderBooks(document.getElementById('book-filter')?.value || 'All');
+             if (state.currentView === 'admin') renderAdminActivities();
          }
 
         function filterBooks() {
@@ -1355,6 +1921,70 @@
             document.getElementById('file-name-label').textContent = 'Browse Files';
             pendingAvatarUrl = state.user.avatarUrl;
             document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        // Custom Notification Modal Functions
+        let notificationCallback = null;
+
+        function showNotification(title, message, type = 'success', subtitle = '', showCancel = false, callback = null) {
+            const modal = document.getElementById('notification-modal');
+            const header = document.getElementById('notification-header');
+            const icon = document.getElementById('notification-icon');
+            const titleEl = document.getElementById('notification-title');
+            const subtitleEl = document.getElementById('notification-subtitle');
+            const messageEl = document.getElementById('notification-message');
+            const btnCancel = document.getElementById('notification-btn-cancel');
+            const btnConfirm = document.getElementById('notification-btn-confirm');
+
+            notificationCallback = callback;
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            if (subtitle) {
+                subtitleEl.textContent = subtitle;
+                subtitleEl.classList.remove('hidden');
+            } else {
+                subtitleEl.classList.add('hidden');
+            }
+
+            if (showCancel) {
+                btnCancel.classList.remove('hidden');
+            } else {
+                btnCancel.classList.add('hidden');
+            }
+
+            // Set style based on type
+            if (type === 'success') {
+                header.className = 'px-8 py-8 border-b bg-green-50 dark:bg-green-900/20 border-slate-100 dark:border-slate-800 text-center';
+                icon.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-green-100 dark:bg-green-900/30 text-green-500';
+                icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                btnConfirm.className = 'flex-1 py-4 bg-green-500 text-white font-bold rounded-2xl hover:bg-green-600 transition shadow-lg hover:scale-[1.02] transform';
+            } else if (type === 'error') {
+                header.className = 'px-8 py-8 border-b bg-rose-50 dark:bg-rose-900/20 border-slate-100 dark:border-slate-800 text-center';
+                icon.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-rose-100 dark:bg-rose-900/30 text-rose-500';
+                icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                btnConfirm.className = 'flex-1 py-4 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition shadow-lg hover:scale-[1.02] transform';
+            } else if (type === 'info') {
+                header.className = 'px-8 py-8 border-b bg-blue-50 dark:bg-blue-900/20 border-slate-100 dark:border-slate-800 text-center';
+                icon.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl bg-blue-100 dark:bg-blue-900/30 text-blue-500';
+                icon.innerHTML = '<i class="fas fa-info-circle"></i>';
+                btnConfirm.className = 'flex-1 py-4 bg-blue-500 text-white font-bold rounded-2xl hover:bg-blue-600 transition shadow-lg hover:scale-[1.02] transform';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeNotification() {
+            document.getElementById('notification-modal').classList.add('hidden');
+            notificationCallback = null;
+        }
+
+        function confirmNotification() {
+            if (notificationCallback && typeof notificationCallback === 'function') {
+                notificationCallback();
+            }
+            closeNotification();
         }
 
         function previewFile(input) {
@@ -1401,6 +2031,7 @@
             
             updateUI();
             closeEditProfile();
+            showNotification('Profile Updated', 'Your profile has been successfully updated.', 'success', 'Success');
         }
 
         function logout() {
@@ -1461,9 +2092,9 @@
                 });
                 
                 // Update dynamic counts
-                const availableCount = booksData.filter(b => b.available).length;
+                const allBooks = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
                 const availableBooksEl = document.getElementById('available-books-count');
-                if (availableBooksEl) availableBooksEl.textContent = (150 + availableCount) + "+";
+                if (availableBooksEl) availableBooksEl.textContent = allBooks.length > 0 ? allBooks.length : "0";
 
                 // Update Profile Borrowings and Requests
                 const borrowedList = document.getElementById('borrowed-books-list');
@@ -1472,15 +2103,20 @@
                     if (state.user.borrowedBooks && state.user.borrowedBooks.length > 0) {
                         state.user.borrowedBooks.forEach(book => {
                             borrowedList.innerHTML += `
-                                <div class="p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm flex gap-5 animate-fade-in">
-                                    <div class="w-20 h-28 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-book-reader text-indigo-400 text-2xl"></i>
+                                <div class="p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm flex gap-5 animate-fade-in flex-col">
+                                    <div class="flex gap-5">
+                                        <div class="w-20 h-28 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-book-reader text-indigo-400 text-2xl"></i>
+                                        </div>
+                                        <div class="flex flex-col justify-center flex-1">
+                                            <h4 class="font-black text-slate-800 dark:text-white">${book.title}</h4>
+                                            <p class="text-xs text-slate-400 font-bold mt-1">Due: ${book.dueDate}</p>
+                                            <span class="mt-3 inline-block px-3 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-[10px] font-black rounded-full uppercase">15 Days Max</span>
+                                        </div>
                                     </div>
-                                    <div class="flex flex-col justify-center">
-                                        <h4 class="font-black text-slate-800 dark:text-white">${book.title}</h4>
-                                        <p class="text-xs text-slate-400 font-bold mt-1">Due: ${book.dueDate}</p>
-                                        <span class="mt-3 inline-block px-3 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-[10px] font-black rounded-full uppercase">15 Days Max</span>
-                                    </div>
+                                    <button onclick="requestReturn(${book.id})" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition flex items-center justify-center gap-2">
+                                        <i class="fas fa-undo"></i> Request Return
+                                    </button>
                                 </div>
                             `;
                         });
@@ -1495,8 +2131,9 @@
                     requestedList.innerHTML = '';
                     if (state.user.requestedBooks && state.user.requestedBooks.length > 0) {
                         requestedSection.classList.remove('hidden');
+                        const books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
                         state.user.requestedBooks.forEach(bookId => {
-                            const book = booksData.find(b => b.id === bookId);
+                            const book = books.find(b => b.id === bookId);
                             if (book) {
                                 requestedList.innerHTML += `
                                     <div class="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-4 animate-fade-in">
@@ -1523,51 +2160,43 @@
                     }
                 }
 
-                // Update Admin Control Center
-                const adminList = document.getElementById('admin-requests-list');
-                if (adminList && state.user.role === 'admin') {
-                    adminList.innerHTML = '';
-                    let allUsers = JSON.parse(localStorage.getItem('libraryUsers') || '[]');
-                    let totalRequests = 0;
-                    
-                    allUsers.forEach(user => {
-                        if (user.requestedBooks && user.requestedBooks.length > 0) {
-                            user.requestedBooks.forEach(bookId => {
-                                const book = booksData.find(b => b.id === bookId);
-                                if (book) {
-                                    totalRequests++;
-                                    adminList.innerHTML += `
-                                        <div class="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 animate-fade-in flex flex-col gap-4">
-                                            <div class="flex justify-between items-start">
-                                                <div class="flex items-center gap-3">
-                                                    <div class="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center text-white text-xs">
-                                                        <i class="fas fa-user"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h5 class="font-bold text-slate-800 dark:text-white text-sm">${user.name}</h5>
-                                                        <p class="text-[10px] text-slate-400 font-bold">${user.dept}</p>
-                                                    </div>
-                                                </div>
-                                                <span class="px-2 py-1 bg-amber-100 text-amber-600 text-[8px] font-black rounded-full uppercase">Pending</span>
+                const returnSection = document.getElementById('pending-returns-section');
+                const returnList = document.getElementById('return-requests-list');
+                if (returnSection && returnList) {
+                    returnList.innerHTML = '';
+                    if (state.user.returnRequests && state.user.returnRequests.length > 0) {
+                        returnSection.classList.remove('hidden');
+                        const books = JSON.parse(localStorage.getItem('libraryBooksCollection') || JSON.stringify(booksData));
+                        state.user.returnRequests.forEach(bookId => {
+                            const book = books.find(b => b.id === bookId);
+                            if (book) {
+                                returnList.innerHTML += `
+                                    <div class="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-4 animate-fade-in">
+                                        <div class="flex gap-5">
+                                            <div class="w-16 h-20 bg-green-50 dark:bg-green-900/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-check-circle text-green-500 text-xl"></i>
                                             </div>
-                                            <div class="py-3 border-y border-slate-100 dark:border-slate-800">
-                                                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Requested Book</p>
-                                                <h4 class="font-black text-slate-800 dark:text-white">${book.title}</h4>
+                                            <div class="flex flex-col justify-center">
+                                                <h4 class="font-black text-slate-800 dark:text-white text-sm">${book.title}</h4>
+                                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Waiting for admin</p>
                                             </div>
-                                            <button onclick="approveRequest(${book.id}, '${user.id}')" class="w-full py-3 gradient-bg text-white text-xs font-black rounded-xl shadow-lg hover:scale-[1.02] transition transform">
-                                                Approve Now
-                                            </button>
                                         </div>
-                                    `;
-                                }
-                            });
-                        }
-                    });
-
-                    if (totalRequests === 0) {
-                        adminList.innerHTML = '<p class="col-span-full text-slate-400 text-sm font-bold p-10 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-100 dark:border-slate-800 text-center">No pending requests across the system.</p>';
+                                        <div class="pt-2 border-t border-slate-50 dark:border-slate-800 flex items-center justify-center">
+                                            <span class="text-[10px] font-black text-green-600 uppercase tracking-widest flex items-center gap-2">
+                                                <i class="fas fa-hourglass-half animate-pulse"></i> Return Pending Approval
+                                            </span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                    } else {
+                        returnSection.classList.add('hidden');
                     }
                 }
+
+                // Update Admin Control Center
+                renderAdminRequests();
                 
                 showSection(state.currentView);
             } else {
@@ -1611,8 +2240,13 @@
                 if (!state.user.borrowedBooks) state.user.borrowedBooks = [];
                 if (!state.user.role) state.user.role = (state.user.email === 'giteshmore6767@gmail.com' || state.user.id === 'admin') ? 'admin' : 'student';
                 state.isLoggedIn = true;
-                state.currentView = savedView || 'dashboard';
+                state.currentView = savedView || (state.user.role === 'admin' ? 'admin' : 'dashboard');
                 updateUI();
+                
+                // If admin, render activities tab by default
+                if (state.user.role === 'admin' && state.currentView === 'admin') {
+                    setTimeout(() => renderAdminActivities(), 100);
+                }
             }
         });
 
